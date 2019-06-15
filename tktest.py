@@ -1,5 +1,4 @@
 from tkinter import *
-from tkinter import ttk
 import tkinter.filedialog
 from PIL import Image, ImageTk
 
@@ -9,23 +8,21 @@ def inference(img):
     return den_map, 0
 
 
-# todo: 获取绑定函数的返回值；布局
+# todo: inference函数和模型的连接
 class App:
     def __init__(self, master, options):
         self.master = master
         self.options = options
-        fm_title = Frame(self.master)
+        fm_title = Frame(self.master, relief='ridge', bd=3, padx=2)
         Label(fm_title, text='(1)select model\n(2)upload an image',    # 标签的文字
-              bg='green',                 # 背景颜色
               font=('Arial', 12),         # 字体和字体大小
+              bg='green',
               width=100, height=5).pack()
-        fm_title.pack(side=TOP)
+        fm_title.place(x=50, y=0, anchor=NW)
 
-        variable = StringVar()
-        variable.set(options[0])
         self.intVar = IntVar()
-        # 使用Frame增加一层容器
-        fm_select = Frame(self.master)
+        fm_select = Frame(self.master, relief='sunken', bd=3, pady=2)
+        # 循环添加radiobutton
         for i, option in enumerate(options):
             Radiobutton(fm_select, text=option, value=i, variable=self.intVar,
                         command=self.change,).grid(row=i, column=0, sticky=W)
@@ -34,7 +31,7 @@ class App:
         self.alg_label.grid(row=0, column=1, columnspan=2)
         fm_select.place(x=50, y=100, anchor=NW)
 
-        fm_upload = Frame(self.master)
+        fm_upload = Frame(self.master, relief='sunken', bd=3)
 
         Button(fm_upload, text="选择文件", command=lambda: self.choose_file()).pack(side=LEFT)
         # Button(fm_upload, text="上传", command=self.upload).pack(side=LEFT)
@@ -44,9 +41,11 @@ class App:
         self.photo = None
         self.den_map = None
 
+    # radio button 改变的响应函数，更新alg_label显示内容
     def change(self):
         self.alg_label['text'] = self.options[int(self.intVar.get())]
 
+    # 选择图片，并将原图，生成的密度图，估计的人数，同时显示在界面下方
     def choose_file(self):
         fm_img = Frame(self.master)
         filename = tkinter.filedialog.askopenfilename(filetypes=[('All Files', '*')],
@@ -69,20 +68,18 @@ class App:
 
         Label(fm_img, text='估计人数: '+str(count)).pack(side=LEFT, anchor=NW)
 
-        fm_img.place(x=0, y=150, anchor=NW)
+        fm_img.place(x=50, y=150, anchor=NW)
+        fm_img.pack()
         print(filename)
 
-    def upload(self):
-        pass
 
-    def print_radio(self):
-        print(self.options[int(self.intVar.get())])
+if __name__ == '__main__':
+    cfg = {'size': '1000x800', 'title': 'crowd count demo', 'model_list': ["csrnet", "new dilated"]}
 
+    root = Tk()
+    root.geometry(cfg['size'])
+    root.title(cfg['title'])
+    model_list = cfg['model_list']
 
-root = Tk()
-root.geometry('1000x800')
-root.title("crowd count demo")
-model_list = ["csrnet", "new dilated"]
-
-display = App(root, options=model_list)
-root.mainloop()
+    display = App(root, options=model_list)
+    root.mainloop()
